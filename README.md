@@ -1,6 +1,6 @@
 # msh2xdmf
 
-The code contains a converter from MSH mesh format to XDMF mesh format for the dolphin users.
+The code contains a converter from MSH mesh format to XDMF mesh format for the dolfin users.
 
 ## How to convert a mesh ?
 For this exemple, let us consider a mesh named `mesh.msh` where 3 physical groups are defined in the `mesh.geo` file:
