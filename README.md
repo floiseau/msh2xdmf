@@ -1,4 +1,4 @@
-# msh2xdmf (current version works for msh2 format only !)
+# msh2xdmf
 
 The code contains a converter from MSH mesh format to XDMF mesh format for the dolphin users.
 
