@@ -2,6 +2,12 @@
 
 The code contains a converter from MSH mesh format to XDMF mesh format for the dolfin users.
 
+## How to test the installation ?
+In order to test the compatibility of the script with the user installation of `meshio` and `dolfin`, the following command must be run at the root of the repository:
+```
+% python3 -m pytest
+```
+
 ## How to convert a mesh ?
 For this exemple, let us consider a mesh named `mesh.msh` where 3 physical groups are defined in the `mesh.geo` file:
 ```cpp
