@@ -1,6 +1,7 @@
 import argparse
 import meshio
 import pathlib
+import numpy as np
 try:
     from dolfin import XDMFFile, Mesh, MeshValueCollection
     from dolfin.cpp.mesh import MeshFunctionSizet
@@ -42,20 +43,32 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
         file_format="xdmf"
         )
 
+    # Generate the cell block for the boundaries cells
+    boundaries_cells_data = np.concatenate(
+        [arr for (t, arr) in msh.cells if t == boundary_type]
+        )
+    boundaries_cells = [
+        meshio.CellBlock(
+            type=boundary_type,
+            data=boundaries_cells_data,
+            )
+        ]
+    # Generate the boundaries cells data
+    boundaries_cell_data = {
+        "boundaries": [
+            np.concatenate(
+                [
+                    cellBlock.data for cellBlock in msh.cells
+                    if cellBlock.type == boundary_type
+                    ]
+                )
+            ]
+        }
     # Generate the meshio Mesh for the boundaries physical groups
     boundaries = meshio.Mesh(
         points=msh.points[:, :dim],
-        cells=[
-            cellBlock for cellBlock in msh.cells
-            if cellBlock.type == boundary_type
-        ],
-        cell_data={
-            "boundaries": [
-                msh.cell_data["gmsh:physical"][i]
-                for i, cellBlock in enumerate(msh.cells)
-                if cellBlock.type == boundary_type
-            ],
-        },
+        cells=boundaries_cells,
+        cell_data=boundaries_cell_data
     )
 
     # Export the XDMF mesh of the lines boundaries
@@ -90,6 +103,7 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
 def import_mesh_from_xdmf(
         domain="domain.xdmf",
         boundaries="boundaries.xdmf",
+        dim=2,
         directory="."):
     """
     Function importing a msh mesh and converting it into a dolfin mesh.
@@ -109,8 +123,8 @@ def import_mesh_from_xdmf(
     with XDMFFile("{}/{}".format(directory, domain)) as infile:
         infile.read(mesh)
     # Import the boundaries
-    mvc = MeshValueCollection("size_t", mesh, dim=2)
-    with XDMFFile("{}/{}.xdmf".format(directory, boundaries)) as infile:
+    mvc = MeshValueCollection("size_t", mesh, dim=dim)
+    with XDMFFile("{}/{}".format(directory, boundaries)) as infile:
         infile.read(mvc, 'boundaries')
     mf = MeshFunctionSizet(mesh, mvc)
     # Return the Mesh and the MeshFunction
