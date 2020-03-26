@@ -1,4 +1,4 @@
-# msh2xdmf
+# msh2xdmf (current version works for msh2 format only !)
 
 The code contains a converter from MSH mesh format to XDMF mesh format for the dolphin users.
 
@@ -15,7 +15,7 @@ In order to convert this mesh, the following command must be used:
 ```shell
 % python3 msh2xdmf.py -d 2 bar.msh
 ```
-This command should outputs the following table (this might not work for msh2 meshes):
+This command should outputs the following table (the table should be empty for msh2 format):
 ```
 +-----------------------------------------+
 |     GMSH label     | MeshFunction value |
