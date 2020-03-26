@@ -11,11 +11,11 @@ Physical Surface("domain") = {1};
 Physical Line("left") = {4};
 Physical Line("right") = {2};
 ```
-In order to convert this mesh, the following command must be runned
+In order to convert this mesh, the following command must be used:
 ```shell
 % python3 msh2xdmf.py -d 2 bar.msh
 ```
-This command outputs the following table (this might not work for msh2 meshes):
+This command should outputs the following table (this might not work for msh2 meshes):
 ```
 +-----------------------------------------+
 |     GMSH label     | MeshFunction value |
@@ -25,7 +25,7 @@ This command outputs the following table (this might not work for msh2 meshes):
 |       domain       |         1          |
 +-----------------------------------------+
 ```
-This table contains the GMSH labels and the value associated to each physical groups. Additionally, two new files are generated: `domain.xdmf` which contains the domain and `boundaries.xdmf` which contains the data about the boundaries. In order to check the data from the table, the `boundaries.xdmf` can be openend with Paraview (or an alternative) to check the value associated to each boundary.
+This table contains the GMSH labels and the value associated to each physical groups. Additionally, two new files are generated: `domain.xdmf` which contains the domain and `boundaries.xdmf` which contains the values associated to the boundaries. In order to check the label/value association, the `boundaries.xdmf` can also be openend with Paraview (or an alternative). It will show the value associated to each boundaries.
 
 In order to import the mesh and its boundaries in dolfin, one can use the utility function `import_mesh_from_xdmf` which returns the dolfin `Mesh` object and the `MeshFunction` object associated to the files.
 ```python3
