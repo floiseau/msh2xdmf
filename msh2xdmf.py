@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+
 import argparse
 import meshio
-import pathlib
+import os
 import numpy as np
 try:
     from dolfin import XDMFFile, Mesh, MeshValueCollection
@@ -147,6 +149,6 @@ if __name__ == "__main__":
         )
     args = parser.parse_args()
     # Get current directory
-    current_directory = pathlib.Path(__file__).parent.absolute()
+    current_directory = os.getcwd()
     # Conert the mesh
     msh2xdmf(args.msh_file, args.dimension, directory=current_directory)
