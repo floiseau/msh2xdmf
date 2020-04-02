@@ -60,7 +60,7 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
         "boundaries": [
             np.concatenate(
                 [
-                    cellBlock.data for cellBlock in msh.cells
+                    msh.cell_data["gmsh:physical"][i] for i, cellBlock in enumerate(msh.cells)
                     if cellBlock.type == boundary_type
                     ]
                 )
