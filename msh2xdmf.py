@@ -13,31 +13,62 @@ except ImportError:
 
 def msh2xdmf(mesh_name, dim=2, directory="."):
     """
-    Function converting a MSH2 mesh into XDMF files.
+    Function converting a MSH mesh into XDMF files.
     The XDMF files are:
         - "domain.xdmf": the domain;
         - "boundaries.xdmf": the boundaries physical groups from GMSH;
     """
-    # Set the parameters
-    if dim == 2:
-        domain_type = "triangle"
-        boundary_type = "line"
-    elif dim == 3:
-        domain_type = "tetra"
-        boundary_type = "triangle"
 
     # Read the input mesh
     msh = meshio.read("{}/{}".format(directory, mesh_name))
 
+    # Generate the domain XDMF file
+    export_domain(msh, dim, directory)
+
+    # Generate the boundaries XDMF file
+    export_boundaries(msh, dim, directory)
+
+    # Display association table
+    display_association_table(msh)
+
+
+def export_domain(msh, dim, directory):
+    """
+    Export the domain XDMF file as well as the subdomains values.
+    """
+    # Set cell type
+    if dim == 2:
+        cell_type = "triangle"
+    elif dim == 3:
+        cell_type = "tetra"
+    # Generate the cell block for the domain cells
+    data = np.concatenate(
+        [arr for (t, arr) in msh.cells if t == cell_type]
+        )
+    cells = [
+        meshio.CellBlock(
+            type=cell_type,
+            data=data,
+            )
+        ]
+    # Generate the domain cells data (for the subdomains)
+    cell_data = {
+        "subdomains": [
+            np.concatenate(
+                [
+                    msh.cell_data["gmsh:physical"][i]
+                    for i, cellBlock in enumerate(msh.cells)
+                    if cellBlock.type == cell_type
+                    ]
+                )
+            ]
+        }
     # Generate a meshio Mesh for the domain
     domain = meshio.Mesh(
         points=msh.points[:, :dim],
-        cells=[
-            cellBlock for cellBlock in msh.cells
-            if cellBlock.type == domain_type
-        ],
+        cells=cells,
+        cell_data=cell_data,
     )
-
     # Export the XDMF mesh of the domain
     meshio.write(
         "{}/{}".format(directory, "domain.xdmf"),
@@ -45,23 +76,34 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
         file_format="xdmf"
         )
 
+
+def export_boundaries(msh, dim, directory):
+    """
+    Export the boundaries XDMF file.
+    """
+    # Set the cell type
+    if dim == 2:
+        cell_type = "line"
+    elif dim == 3:
+        cell_type = "triangle"
     # Generate the cell block for the boundaries cells
-    boundaries_cells_data = np.concatenate(
-        [arr for (t, arr) in msh.cells if t == boundary_type]
+    data = np.concatenate(
+        [arr for (t, arr) in msh.cells if t == cell_type]
         )
     boundaries_cells = [
         meshio.CellBlock(
-            type=boundary_type,
-            data=boundaries_cells_data,
+            type=cell_type,
+            data=data,
             )
         ]
     # Generate the boundaries cells data
-    boundaries_cell_data = {
+    cell_data = {
         "boundaries": [
             np.concatenate(
                 [
-                    msh.cell_data["gmsh:physical"][i] for i, cellBlock in enumerate(msh.cells)
-                    if cellBlock.type == boundary_type
+                    msh.cell_data["gmsh:physical"][i]
+                    for i, cellBlock in enumerate(msh.cells)
+                    if cellBlock.type == cell_type
                     ]
                 )
             ]
@@ -70,9 +112,8 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
     boundaries = meshio.Mesh(
         points=msh.points[:, :dim],
         cells=boundaries_cells,
-        cell_data=boundaries_cell_data
+        cell_data=cell_data,
     )
-
     # Export the XDMF mesh of the lines boundaries
     meshio.write(
         "{}/{}".format(directory, "boundaries.xdmf"),
@@ -80,6 +121,12 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
         file_format="xdmf"
         )
 
+
+def display_association_table(msh):
+    """
+    Display the association between the physical group label and the mesh
+    value.
+    """
     # Display the correspondance
     formatter = "|{:^20}|{:^20}|"
     topbot = "+{:-^41}+".format("", "")
@@ -105,32 +152,44 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
 def import_mesh_from_xdmf(
         domain="domain.xdmf",
         boundaries="boundaries.xdmf",
+        subdomains=False,
         dim=2,
         directory="."):
     """
     Function importing a msh mesh and converting it into a dolfin mesh.
 
     Arguments:
-        - domain: name of the domain XDMF file;
-        - boundaries: name of the boundaries XDMF file;
-        - directory: (optional) directory of the mesh;
+        - domain (str): name of the domain XDMF file;
+        - boundaries (str): name of the boundaries XDMF file;
+        - dim (int): dimension of the domain;
+        - subdomains (bool): true if there are subdomains, else false
+        - directory (str): (optional) directory of the mesh;
 
     Output:
         - dolfin Mesh object containing the domain;
         - dolfin MeshFunction object containing the physical lines (dim=2) or
-        surfaces (dim=3) defined in the msh file;
+        surfaces (dim=3) defined in the msh file and the sub-domains;
     """
     # Import the converted domain
     mesh = Mesh()
     with XDMFFile("{}/{}".format(directory, domain)) as infile:
         infile.read(mesh)
     # Import the boundaries
-    mvc = MeshValueCollection("size_t", mesh, dim=dim)
+    boundaries_mvc = MeshValueCollection("size_t", mesh, dim=dim)
     with XDMFFile("{}/{}".format(directory, boundaries)) as infile:
-        infile.read(mvc, 'boundaries')
-    mf = MeshFunctionSizet(mesh, mvc)
-    # Return the Mesh and the MeshFunction
-    return mesh, mf
+        infile.read(boundaries_mvc, 'boundaries')
+    boundaries_mf = MeshFunctionSizet(mesh, boundaries_mvc)
+    # Import the subdomains
+    if subdomains:
+        subdomains_mvc = MeshValueCollection("size_t", mesh, dim=dim)
+        with XDMFFile("{}/{}".format(directory, domain)) as infile:
+            infile.read(subdomains_mvc, 'subdomains')
+        subdomains_mf = MeshFunctionSizet(mesh, subdomains_mvc)
+    # Return the Mesh and the MeshFunction objects
+    if not subdomains:
+        return mesh, boundaries_mf
+    else:
+        return mesh, boundaries_mf, subdomains_mf
 
 
 if __name__ == "__main__":
