@@ -45,7 +45,7 @@ mesh, mesh_function = import_mesh_from_xdmf(
 ```
 
 ## How to convert a multidomain mesh ?
-For this exemple, let us consider a mesh named `multidomain.msh` where 7 physical groups are defined in the `mesh.geo` file:
+For this exemple, let us consider a mesh named `multidomain.msh` where 7 physical groups are defined in the `multidomain.geo` file:
 ```cpp
 // Domain
 Physical Surface("top_domain") = {1};
