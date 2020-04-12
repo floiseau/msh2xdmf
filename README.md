@@ -82,11 +82,11 @@ In order to import the mesh and the value asosociated to the subdomains and the 
 ```python3
 from msh2xdmf import_mesh_from_xdmf
 
-mesh, mesh_function = import_mesh_from_xdmf(
+mesh, boundaries_mf, subdomains_mf = import_mesh_from_xdmf(
     domain="domain.xdmf",
     boundaries="boundaries.xdmf",
     dim=2,
     subdomains=True
     )
 ```
-The MeshFunction will contains the value associated to each subdomains and to each boundaries.
+In this exemple, `boundaries_mf` is the MeshFunction object associated to the boundaries and `subdomains_mf` is the MeshFunction associated to the subdomains.
