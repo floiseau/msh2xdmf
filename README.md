@@ -35,7 +35,7 @@ This table contains the GMSH labels and the value associated to each physical gr
 
 In order to import the mesh and its boundaries in dolfin, one can use the utility function `import_mesh_from_xdmf` which returns the dolfin `Mesh` object and the `MeshFunction` object associated to the files.
 ```python3
-from msh2xdmf import_mesh_from_xdmf
+from msh2xdmf import import_mesh_from_xdmf
 
 mesh, mesh_function = import_mesh_from_xdmf(
     domain="domain.xdmf",
@@ -80,7 +80,7 @@ This table contains the GMSH labels and the value associated to each physical gr
 
 In order to import the mesh and the value asosociated to the subdomains and the boundaries in dolfin, one can use the utility function `import_mesh_from_xdmf` which returns the dolfin `Mesh` object and the `MeshFunction` object associated to the files.
 ```python3
-from msh2xdmf import_mesh_from_xdmf
+from msh2xdmf import import_mesh_from_xdmf
 
 mesh, boundaries_mf, subdomains_mf = import_mesh_from_xdmf(
     domain="domain.xdmf",
