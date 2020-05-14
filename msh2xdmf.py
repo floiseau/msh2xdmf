@@ -42,9 +42,12 @@ def export_domain(msh, dim, directory):
     elif dim == 3:
         cell_type = "tetra"
     # Generate the cell block for the domain cells
-    data = np.concatenate(
-        [arr for (t, arr) in msh.cells if t == cell_type]
-        )
+    data_array = [arr for (t, arr) in msh.cells if t == cell_type]
+    if len(data_array) == 0:
+        print("WARNING: No domain physical group found.")
+        return
+    else:
+        data = np.concatenate(data_array)
     cells = [
         meshio.CellBlock(
             type=cell_type,
@@ -87,9 +90,12 @@ def export_boundaries(msh, dim, directory):
     elif dim == 3:
         cell_type = "triangle"
     # Generate the cell block for the boundaries cells
-    data = np.concatenate(
-        [arr for (t, arr) in msh.cells if t == cell_type]
-        )
+    data_array = [arr for (t, arr) in msh.cells if t == cell_type]
+    if len(data_array) == 0:
+        print("WARNING: No boundary physical group found.")
+        return
+    else:
+        data = np.concatenate(data_array)
     boundaries_cells = [
         meshio.CellBlock(
             type=cell_type,
