@@ -55,17 +55,28 @@ def export_domain(msh, dim, directory):
             )
         ]
     # Generate the domain cells data (for the subdomains)
-    cell_data = {
-        "subdomains": [
-            np.concatenate(
-                [
-                    msh.cell_data["gmsh:physical"][i]
-                    for i, cellBlock in enumerate(msh.cells)
-                    if cellBlock.type == cell_type
-                    ]
-                )
-            ]
-        }
+    try:
+        cell_data = {
+            "subdomains": [
+                np.concatenate(
+                    [
+                        msh.cell_data["gmsh:physical"][i]
+                        for i, cellBlock in enumerate(msh.cells)
+                        if cellBlock.type == cell_type
+                        ]
+                    )
+                ]
+            }
+    except KeyError:
+        raise ValueError(
+            """
+            No physical group found for the domain.
+            Define the domain physical group.
+                - if dim=2, the domain is a surface
+                - if dim=3, the domain is a volume
+            """
+            )
+
     # Generate a meshio Mesh for the domain
     domain = meshio.Mesh(
         points=msh.points[:, :dim],
