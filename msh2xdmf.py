@@ -4,6 +4,8 @@ import argparse
 import meshio
 import os
 import numpy as np
+import yaml
+
 try:
     from dolfin import XDMFFile, Mesh, MeshValueCollection
     from dolfin.cpp.mesh import MeshFunctionSizet
@@ -11,7 +13,7 @@ except ImportError:
     print("Could not import dolfin. Continuing without Dolfin support.")
 
 
-def msh2xdmf(mesh_name, dim=2, directory="."):
+def msh2xdmf(mesh_name, dim=2, directory=".", write_labels=True):
     """
     Function converting a MSH mesh into XDMF files.
     The XDMF files are:
@@ -23,16 +25,19 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
     msh = meshio.read("{}/{}".format(directory, mesh_name))
 
     # Generate the domain XDMF file
-    export_domain(msh, dim, directory)
+    export_domain(msh, dim, directory, filename=mesh_name[0:-4] + "_domain")
 
     # Generate the boundaries XDMF file
-    export_boundaries(msh, dim, directory)
+    export_boundaries(msh, dim, directory, filename=mesh_name[0:-4] + "_boundaries")
 
     # Display association table
-    display_association_table(msh)
+    labels_dict = display_association_table(msh)
+    if write_labels:
+        labels_file = "{}/{}_labels.yml".format(directory, mesh_name[0:-4])
+        with open(labels_file, 'w') as f:
+            yaml.dump(labels_dict, f, default_flow_style=False)
 
-
-def export_domain(msh, dim, directory):
+def export_domain(msh, dim, directory, filename="domains"):
     """
     Export the domain XDMF file as well as the subdomains values.
     """
@@ -85,13 +90,13 @@ def export_domain(msh, dim, directory):
     )
     # Export the XDMF mesh of the domain
     meshio.write(
-        "{}/{}".format(directory, "domain.xdmf"),
+        "{}/{}.xdmf".format(directory, filename),
         domain,
         file_format="xdmf"
-        )
+        ) 
 
 
-def export_boundaries(msh, dim, directory):
+def export_boundaries(msh, dim, directory, filename="boundaries"):
     """
     Export the boundaries XDMF file.
     """
@@ -133,7 +138,7 @@ def export_boundaries(msh, dim, directory):
     )
     # Export the XDMF mesh of the lines boundaries
     meshio.write(
-        "{}/{}".format(directory, "boundaries.xdmf"),
+        "{}/{}.xdmf".format(directory, filename),
         boundaries,
         file_format="xdmf"
         )
@@ -154,6 +159,7 @@ def display_association_table(msh):
     print(formatter.format("GMSH label", "MeshFunction value"))
     print(separator)
 
+    labels_dict = {} 
     for label, arrays in msh.cell_sets.items():
         # Get the index of the array in arrays
         for i, array in enumerate(arrays):
@@ -163,15 +169,19 @@ def display_association_table(msh):
         value = msh.cell_data["gmsh:physical"][index][0]
         # Display the association
         print(formatter.format(label, value))
+        labels_dict[label] = int(value)
     print(topbot)
+    return labels_dict
 
 
 def import_mesh_from_xdmf(
         domain="domain.xdmf",
         boundaries="boundaries.xdmf",
+        labels="labels.yaml",
         subdomains=False,
         dim=2,
-        directory="."):
+        directory="."
+        ):
     """
     Function importing a msh mesh and converting it into a dolfin mesh.
 
@@ -186,6 +196,7 @@ def import_mesh_from_xdmf(
         - dolfin Mesh object containing the domain;
         - dolfin MeshFunction object containing the physical lines (dim=2) or
         surfaces (dim=3) defined in the msh file and the sub-domains;
+        - a dictionary with labels for boundaries and subdomains
     """
     # Import the converted domain
     mesh = Mesh()
@@ -202,12 +213,15 @@ def import_mesh_from_xdmf(
         with XDMFFile("{}/{}".format(directory, domain)) as infile:
             infile.read(subdomains_mvc, 'subdomains')
         subdomains_mf = MeshFunctionSizet(mesh, subdomains_mvc)
+    # Import labels
+    with open("{}/{}".format(directory, labels), 'r') as infile:
+        labels = yaml.load(infile, Loader=yaml.FullLoader)
     # Return the Mesh and the MeshFunction objects
     if not subdomains:
-        return mesh, boundaries_mf
+        return mesh, boundaries_mf, labels
     else:
-        return mesh, boundaries_mf, subdomains_mf
-
+        return mesh, boundaries_mf, subdomains_mf, labels    
+    print(labels)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -11,9 +11,10 @@ def test_import():
     # Get the current directory
     current_dir = "{}/{}".format(os.getcwd(), "test/import")
     # Run the import
-    mesh, boundaries, subdomains = import_mesh_from_xdmf(
-        domain="domain.xdmf",
-        boundaries="boundaries.xdmf",
+    mesh, boundaries, subdomains, labels = import_mesh_from_xdmf(
+        domain="multidomain_domain.xdmf",
+        boundaries="multidomain_boundaries.xdmf",
+        labels="multidomain_labels.yml",
         dim=2,
         directory=current_dir,
         subdomains=True,
