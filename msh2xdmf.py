@@ -4,6 +4,7 @@ import argparse
 import meshio
 import os
 import numpy as np
+from configparser import ConfigParser
 try:
     from dolfin import XDMFFile, Mesh, MeshValueCollection
     from dolfin.cpp.mesh import MeshFunctionSizet
@@ -27,8 +28,8 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
     export_domain(msh, dim, directory, prefix)
     # Generate the boundaries XDMF file
     export_boundaries(msh, dim, directory, prefix)
-    # Display association table
-    display_association_table(msh)
+    # Export association table
+    export_association_table(msh, prefix, directory)
 
 
 def export_domain(msh, dim, directory, prefix):
@@ -138,20 +139,24 @@ def export_boundaries(msh, dim, directory, prefix):
         )
 
 
-def display_association_table(msh):
+def export_association_table(msh, prefix='mesh', directory='.', verbose=True):
     """
     Display the association between the physical group label and the mesh
     value.
     """
+    # Create association table
+    association_table = {}
+
     # Display the correspondance
     formatter = "|{:^20}|{:^20}|"
     topbot = "+{:-^41}+".format("")
     separator = "+{:-^20}+{:-^20}+".format("", "")
 
     # Display
-    print(topbot)
-    print(formatter.format("GMSH label", "MeshFunction value"))
-    print(separator)
+    if verbose:
+        print('\n' + topbot)
+        print(formatter.format("GMSH label", "MeshFunction value"))
+        print(separator)
 
     for label, arrays in msh.cell_sets.items():
         # Get the index of the array in arrays
@@ -160,9 +165,20 @@ def display_association_table(msh):
                 index = i
         # Get the value in cell_data for the corresponding array
         value = msh.cell_data["gmsh:physical"][index][0]
+        # Store the association table in a dictionnary
+        association_table[label] = value
+
         # Display the association
-        print(formatter.format(label, value))
-    print(topbot)
+        if verbose:
+            print(formatter.format(label, value))
+    if verbose:
+        print(topbot)
+    # Export the association table
+    file_content = ConfigParser()
+    file_content["ASSOCIATION TABLE"] = association_table
+    file_name = "{}/{}_{}".format(directory, prefix, "association_table.ini")
+    with open(file_name, 'w') as f:
+        file_content.write(f)
 
 
 def import_mesh_from_xdmf(
@@ -172,7 +188,7 @@ def import_mesh_from_xdmf(
         directory=".",
         ):
     """
-    Function importing a msh mesh and converting it into a dolfin mesh.
+    Function importing a dolfin mesh.
 
     Arguments:
         - domain (str): name of the domain XDMF file;
@@ -184,7 +200,8 @@ def import_mesh_from_xdmf(
     Output:
         - dolfin Mesh object containing the domain;
         - dolfin MeshFunction object containing the physical lines (dim=2) or
-        surfaces (dim=3) defined in the msh file and the sub-domains;
+            surfaces (dim=3) defined in the msh file and the sub-domains;
+        - association table
     """
     # Set the file name
     domain = "{}_domain.xdmf".format(prefix)
@@ -204,11 +221,19 @@ def import_mesh_from_xdmf(
         with XDMFFile("{}/{}".format(directory, domain)) as infile:
             infile.read(subdomains_mvc, 'subdomains')
         subdomains_mf = MeshFunctionSizet(mesh, subdomains_mvc)
+    # Import the association table
+    association_table_name = "{}/{}_{}".format(directory, prefix, "association_table.ini")
+    file_content = ConfigParser()
+    file_content.read(association_table_name)
+    association_table = dict(file_content["ASSOCIATION TABLE"])
+    # Convert the value from string to int
+    for key, value in association_table.items():
+        association_table[key] = int(value)
     # Return the Mesh and the MeshFunction objects
     if not subdomains:
-        return mesh, boundaries_mf
+        return mesh, boundaries_mf, association_table
     else:
-        return mesh, boundaries_mf, subdomains_mf
+        return mesh, boundaries_mf, subdomains_mf, association_table
 
 
 if __name__ == "__main__":

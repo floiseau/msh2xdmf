@@ -11,9 +11,17 @@ def test_import():
     # Get the current directory
     current_dir = "{}/{}".format(os.getcwd(), "test/import")
     # Run the import
-    mesh, boundaries, subdomains = import_mesh_from_xdmf(
-        prefix="mesh",
+    mesh, boundaries, subdomains, labels = import_mesh_from_xdmf(
+        prefix="multidomain",
         dim=2,
         directory=current_dir,
         subdomains=True,
         )
+    # Check if the labels are correct
+    assert(labels["top_domain"] == 1)
+    assert(labels["bot_domain"] == 2)
+    assert(labels["middle"] == 3)
+    assert(labels["right"] == 4)
+    assert(labels["top"] == 5)
+    assert(labels["bot"] == 6)
+    assert(labels["left"] == 7)
