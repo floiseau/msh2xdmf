@@ -13,12 +13,16 @@ def test_conversion():
     # Run the conversion
     msh2xdmf("multidomain.msh", dim=2, directory=current_dir)
     # Check if the files have been create
-    assert os.path.isfile("{}/{}".format(current_dir, "domain.xdmf"))
-    assert os.path.isfile("{}/{}".format(current_dir, "domain.h5"))
-    assert os.path.isfile("{}/{}".format(current_dir, "boundaries.xdmf"))
-    assert os.path.isfile("{}/{}".format(current_dir, "boundaries.h5"))
+    assert os.path.isfile("{}/{}".format(
+        current_dir, "multidomain_domain.xdmf"))
+    assert os.path.isfile("{}/{}".format(
+        current_dir, "multidomain_domain.h5"))
+    assert os.path.isfile("{}/{}".format(
+        current_dir, "multidomain_boundaries.xdmf"))
+    assert os.path.isfile("{}/{}".format(
+        current_dir, "multidomain_boundaries.h5"))
     # Remove the files
-    os.remove("{}/{}".format(current_dir, "domain.xdmf"))
-    os.remove("{}/{}".format(current_dir, "domain.h5"))
-    os.remove("{}/{}".format(current_dir, "boundaries.xdmf"))
-    os.remove("{}/{}".format(current_dir, "boundaries.h5"))
+    os.remove("{}/{}".format(current_dir, "multidomain_domain.xdmf"))
+    os.remove("{}/{}".format(current_dir, "multidomain_domain.h5"))
+    os.remove("{}/{}".format(current_dir, "multidomain_boundaries.xdmf"))
+    os.remove("{}/{}".format(current_dir, "multidomain_boundaries.h5"))

@@ -31,15 +31,14 @@ This command should outputs the following table (the table should be empty for m
 |       domain       |         1          |
 +-----------------------------------------+
 ```
-This table contains the GMSH labels and the value associated to each physical groups. Additionally, two new files are generated: `domain.xdmf` which contains the domain and `boundaries.xdmf` which contains the values associated to the boundaries. In order to check the label/value association, the `boundaries.xdmf` can also be openend with Paraview (or an alternative). It will show the value associated to each boundaries.
+This table contains the GMSH labels and the value associated to each physical groups. Additionally, four new files are generated: `mesh_domain.xdmf` and `mesh_domain.h5` which contain the domain and `mesh_boundaries.xdmf` and `mesh_boundaries.h5` which contain the values associated to the boundaries. In order to check the label/value association, the `.xdmf` files can also be openend with Paraview (or an alternative). It will show the value associated to each domains/boundaries.
 
 In order to import the mesh and its boundaries in dolfin, one can use the utility function `import_mesh_from_xdmf` which returns the dolfin `Mesh` object and the `MeshFunction` object associated to the files.
 ```python3
 from msh2xdmf import import_mesh_from_xdmf
 
 mesh, mesh_function = import_mesh_from_xdmf(
-    domain="domain.xdmf",
-    boundaries="boundaries.xdmf",
+    prefix="mesh" # it the file name of the msh file without the extension
     dim=2,
     )
 ```
@@ -76,15 +75,14 @@ This command should outputs the following table (the table should be empty for m
 |     bot_domain     |         2          |
 +-----------------------------------------+
 ```
-This table contains the GMSH labels and the value associated to each physical groups. Additionally, two new files are generated: `domain.xdmf` which contains the domain and the values associated to each subdomains and `boundaries.xdmf` which contains the values associated to the boundaries. In order to check the label/value association, both files can be openend with Paraview (or an alternative) to check the values associated to each boundaries and subdomains.
+This table contains the GMSH labels and the value associated to each physical groups. Additionally, four new files are generated: `multidomain_domain.xdmf` and `multidomain_domain.h5` which contain the domain and the values associated to each subdomains and `boundaries.xdmf` and `boundaries.h5` which contains the values associated to the boundaries. In order to check the label/value association, both files can be openend with Paraview (or an alternative) to check the values associated to each boundaries and subdomains.
 
 In order to import the mesh and the value asosociated to the subdomains and the boundaries in dolfin, one can use the utility function `import_mesh_from_xdmf` which returns the dolfin `Mesh` object and the `MeshFunction` object associated to the files.
 ```python3
 from msh2xdmf import import_mesh_from_xdmf
 
 mesh, boundaries_mf, subdomains_mf = import_mesh_from_xdmf(
-    domain="domain.xdmf",
-    boundaries="boundaries.xdmf",
+    prefix="multidomain" # it is the file name of the msh file without the extension
     dim=2,
     subdomains=True
     )

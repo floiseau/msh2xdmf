@@ -19,20 +19,19 @@ def msh2xdmf(mesh_name, dim=2, directory="."):
         - "boundaries.xdmf": the boundaries physical groups from GMSH;
     """
 
+    # Get the mesh name has prefix
+    prefix = mesh_name.split('.')[0]
     # Read the input mesh
     msh = meshio.read("{}/{}".format(directory, mesh_name))
-
     # Generate the domain XDMF file
-    export_domain(msh, dim, directory)
-
+    export_domain(msh, dim, directory, prefix)
     # Generate the boundaries XDMF file
-    export_boundaries(msh, dim, directory)
-
+    export_boundaries(msh, dim, directory, prefix)
     # Display association table
     display_association_table(msh)
 
 
-def export_domain(msh, dim, directory):
+def export_domain(msh, dim, directory, prefix):
     """
     Export the domain XDMF file as well as the subdomains values.
     """
@@ -85,13 +84,13 @@ def export_domain(msh, dim, directory):
     )
     # Export the XDMF mesh of the domain
     meshio.write(
-        "{}/{}".format(directory, "domain.xdmf"),
+        "{}/{}_{}".format(directory, prefix, "domain.xdmf"),
         domain,
         file_format="xdmf"
         )
 
 
-def export_boundaries(msh, dim, directory):
+def export_boundaries(msh, dim, directory, prefix):
     """
     Export the boundaries XDMF file.
     """
@@ -133,7 +132,7 @@ def export_boundaries(msh, dim, directory):
     )
     # Export the XDMF mesh of the lines boundaries
     meshio.write(
-        "{}/{}".format(directory, "boundaries.xdmf"),
+        "{}/{}_{}".format(directory, prefix, "boundaries.xdmf"),
         boundaries,
         file_format="xdmf"
         )
@@ -146,7 +145,7 @@ def display_association_table(msh):
     """
     # Display the correspondance
     formatter = "|{:^20}|{:^20}|"
-    topbot = "+{:-^41}+".format("", "")
+    topbot = "+{:-^41}+".format("")
     separator = "+{:-^20}+{:-^20}+".format("", "")
 
     # Display
@@ -167,11 +166,11 @@ def display_association_table(msh):
 
 
 def import_mesh_from_xdmf(
-        domain="domain.xdmf",
-        boundaries="boundaries.xdmf",
+        prefix="mesh",
         subdomains=False,
         dim=2,
-        directory="."):
+        directory=".",
+        ):
     """
     Function importing a msh mesh and converting it into a dolfin mesh.
 
@@ -187,6 +186,9 @@ def import_mesh_from_xdmf(
         - dolfin MeshFunction object containing the physical lines (dim=2) or
         surfaces (dim=3) defined in the msh file and the sub-domains;
     """
+    # Set the file name
+    domain = "{}_domain.xdmf".format(prefix)
+    boundaries = "{}_boundaries.xdmf".format(prefix)
     # Import the converted domain
     mesh = Mesh()
     with XDMFFile("{}/{}".format(directory, domain)) as infile:
