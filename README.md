@@ -83,7 +83,7 @@ In order to import the mesh and the value asosociated to the subdomains and the 
 from msh2xdmf import import_mesh_from_xdmf
 
 mesh, boundaries_mf, subdomains_mf, association_table = import_mesh_from_xdmf(
-    prefix="multidomain" # it is the file name of the msh file without the extension
+    prefix="multidomain", # it is the file name of the msh file without the extension
     dim=2,
     subdomains=True
     )
