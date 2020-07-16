@@ -187,15 +187,15 @@ def import_mesh_from_xdmf(
         dim=2,
         directory=".",
         ):
-    """
-    Function importing a dolfin mesh.
+    """Function importing a dolfin mesh.
 
     Arguments:
-        - domain (str): name of the domain XDMF file;
-        - boundaries (str): name of the boundaries XDMF file;
-        - dim (int): dimension of the domain;
-        - subdomains (bool): true if there are subdomains, else false
-        - directory (str): (optional) directory of the mesh;
+        prefix (str, optional): mesh files prefix (eg. my_mesh.msh,
+            my_mesh_domain.xdmf, my_mesh_bondaries.xdmf). Defaults to "mesh".
+        subdomains (bool, optional): True if there are subdomains. Defaults to
+            False.
+        dim (int, optional): dimension of the domain. Defaults to 2.
+        directory (str, optional): directory of the mesh files. Defaults to ".".
 
     Output:
         - dolfin Mesh object containing the domain;
