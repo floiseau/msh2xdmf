@@ -206,6 +206,12 @@ def import_mesh_from_xdmf(
     # Set the file name
     domain = "{}_domain.xdmf".format(prefix)
     boundaries = "{}_boundaries.xdmf".format(prefix)
+
+    # create 2 xdmf files if not converted before
+    if not os.path.exists("{}/{}".format(directory, domain)) or \
+       not os.path.exists("{}/{}".format(directory, boundaries)):
+        msh2xdmf(".msh".format(prefix), dim=dim, directory=".")
+
     # Import the converted domain
     mesh = Mesh()
     with XDMFFile("{}/{}".format(directory, domain)) as infile:
