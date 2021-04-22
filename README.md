@@ -22,7 +22,10 @@ In order to convert and import the mesh and its boundaries in dolfin, one can us
 ```python3
 from msh2xdmf import import_mesh
 
-mesh, boundaries_mf, association_table = import_mesh('mesh', dim=2)
+mesh, boundaries_mf, association_table = import_mesh(
+    prefix='mesh', # it the file name of the msh file without the extension
+    dim=2,
+    )
 ```
 
 In order to get the value associated to get the `MeshFunction` value associated to the `left`, one must use: `association_table["left"]`.
@@ -72,7 +75,7 @@ In order to only import the mesh and its boundaries in dolfin, one must also use
 from msh2xdmf import import_mesh
 
 mesh, boundaries_mf, association_table = import_mesh(
-    prefix="mesh" # it the file name of the msh file without the extension
+    prefix="mesh", # it the file name of the msh file without the extension
     dim=2,
     )
 ```
@@ -98,7 +101,10 @@ In order import the mesh and the value associated to the subdomains and the boun
 from msh2xdmf import import_mesh
 
 mesh, boundaries_mf, subdomains_mf, association_table = import_mesh(
-    prefix='multidomain', dim=2, subdomains=True)
+    prefix='multidomain',
+    dim=2,
+    subdomains=True,
+    )
 ```
 It should outputs the following table (the table should be empty for msh2 format):
 ```
