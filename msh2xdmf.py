@@ -163,14 +163,15 @@ def export_association_table(msh, prefix='mesh', directory='.', verbose=True):
         for i, array in enumerate(arrays):
             if array.size != 0:
                 index = i
-        # Get the value in cell_data for the corresponding array
-        value = msh.cell_data["gmsh:physical"][index][0]
-        # Store the association table in a dictionnary
-        association_table[label] = value
-
-        # Display the association
-        if verbose:
-            print(formatter.format(label, value))
+        # Added check to make sure that the association table
+        # doesn't try to import irrelevant information.
+        if label != "gmsh:bounding_entities":
+            value = msh.cell_data["gmsh:physical"][index][0]
+            # Store the association table in a dictionnary
+            association_table[label] = value
+            # Display the association
+            if verbose:
+                print(formatter.format(label, value))
     if verbose:
         print(topbot)
     # Export the association table
