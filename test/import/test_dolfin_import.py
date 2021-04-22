@@ -1,7 +1,7 @@
+from msh2xdmf import import_mesh
 import os
 import sys
 sys.path.append('.')
-from msh2xdmf import import_mesh_from_xdmf
 
 
 def test_import():
@@ -11,12 +11,12 @@ def test_import():
     # Get the current directory
     current_dir = "{}/{}".format(os.getcwd(), "test/import")
     # Run the import
-    mesh, boundaries, subdomains, labels = import_mesh_from_xdmf(
+    mesh, boundaries, subdomains, labels = import_mesh(
         prefix="multidomain",
         dim=2,
         directory=current_dir,
         subdomains=True,
-        )
+    )
     # Check if the labels are correct
     assert(labels["top_domain"] == 1)
     assert(labels["bot_domain"] == 2)
