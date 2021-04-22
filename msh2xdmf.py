@@ -187,15 +187,15 @@ def import_mesh_from_xdmf(
         dim=2,
         directory=".",
         ):
-    """
-    Function importing a dolfin mesh.
+    """Function importing a dolfin mesh.
 
     Arguments:
-        - domain (str): name of the domain XDMF file;
-        - boundaries (str): name of the boundaries XDMF file;
-        - dim (int): dimension of the domain;
-        - subdomains (bool): true if there are subdomains, else false
-        - directory (str): (optional) directory of the mesh;
+        prefix (str, optional): mesh files prefix (eg. my_mesh.msh,
+            my_mesh_domain.xdmf, my_mesh_bondaries.xdmf). Defaults to "mesh".
+        subdomains (bool, optional): True if there are subdomains. Defaults to
+            False.
+        dim (int, optional): dimension of the domain. Defaults to 2.
+        directory (str, optional): directory of the mesh files. Defaults to ".".
 
     Output:
         - dolfin Mesh object containing the domain;
@@ -206,6 +206,12 @@ def import_mesh_from_xdmf(
     # Set the file name
     domain = "{}_domain.xdmf".format(prefix)
     boundaries = "{}_boundaries.xdmf".format(prefix)
+
+    # create 2 xdmf files if not converted before
+    if not os.path.exists("{}/{}".format(directory, domain)) or \
+       not os.path.exists("{}/{}".format(directory, boundaries)):
+        msh2xdmf("{}.msh".format(prefix), dim=dim, directory=directory)
+
     # Import the converted domain
     mesh = Mesh()
     with XDMFFile("{}/{}".format(directory, domain)) as infile:
